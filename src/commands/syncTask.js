@@ -1,6 +1,6 @@
 import inquirer from "inquirer"
 import xlsx from "xlsx"
-import attendeeEmails from "../../data/attendeeEmails.json" with { type: 'json' }
+import attendeeEmails from "../../data/attendeeEmails.json" with { type: "json" }
 
 const games = []
 let workbook
@@ -34,8 +34,7 @@ export const syncTask = async (options) => {
       name: "calendarId", // will be saved in answers.calendarId
       message:
         "Enter the Calendar ID - retrieve via Google Calendar API `https://www.googleapis.com/calendar/v3/users/me/calendarList`",
-      default:
-        process.env.CALENDAR_ID,
+      default: process.env.CALENDAR_ID,
       validate: (input) => (input ? true : "Calendar ID cannot be empty"), // input validation
     },
     {
@@ -43,8 +42,7 @@ export const syncTask = async (options) => {
       name: "token", // will be saved in answers.token
       message:
         "Enter the Google Calendar API access token - goto `https://developers.google.com/oauthplayground/#step1&scopes=https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fcalendar.events.owned&url=https%3A%2F%2F&content_type=application%2Fjson&http_method=GET&useDefaultOauthCred=unchecked&oauthEndpointSelect=Google&oauthAuthEndpointValue=https%3A%2F%2Faccounts.google.com%2Fo%2Foauth2%2Fv2%2Fauth&oauthTokenEndpointValue=https%3A%2F%2Foauth2.googleapis.com%2Ftoken&includeCredentials=unchecked&accessTokenType=bearer&autoRefreshToken=unchecked&accessType=offline&prompt=consent&response_type=code&wrapLines=on`",
-      default:
-        process.env.ACCESS_TOKEN,
+      default: process.env.ACCESS_TOKEN,
       validate: (input) => (input ? true : "Access token cannot be empty"), // input validation
     },
   ]
@@ -130,7 +128,7 @@ const syncGamesToCalendar = async (answers, options) => {
         `HTTP error! status: ${eventsResponse.status} ${eventsResponse.statusText}`,
       )
     const data = await eventsResponse.json()
-    console.debug("🏒 syncGamesToCalendar - events list response:", data)
+    // console.debug("🏒 syncGamesToCalendar - events list response:", data)
     console.log("Comparing games to events for calendar: ", data.summary)
     const events = data.items || []
     for (const game of games) {
@@ -176,34 +174,83 @@ Scorer 2: ${game.scorer2 || "[None]"}
       )
       if (event) {
         // update existing event
-        event.summary = eventSummary
-        event.description = eventDescription
-        if (attendees.length > 0) {
-          event.attendees = attendees.slice()
+        let eventHasChanges = false
+        if (
+          event.summary !== eventSummary ||
+          event.description !== eventDescription
+        ) {
+          event.summary = eventSummary
+          event.description = eventDescription
+          eventHasChanges = true
         }
-        if (!options.test) {
-          const eventUpdateRequest = new Request(
-            `https://www.googleapis.com//calendar/v3/calendars/${answers.calendarId}/events/${event.id}?sendUpdates=all`,
-            {
-              headers: headers,
-              method: "PUT",
-              body: JSON.stringify(event),
-            },
-          )
-          const eventUpdateResponse = await fetch(eventUpdateRequest)
-          if (!eventUpdateResponse.ok)
-            throw new Error(
-              `HTTP error! status: ${eventUpdateResponse.status} ${eventUpdateResponse.statusText}`,
+        if (attendees.length > 0) {
+          // compare attendees
+          if (!event.attendees) {
+            eventHasChanges = true
+          } else {
+            for (const attendee of attendees) {
+              const eventAttendee = event.attendees?.find(
+                (eventAttendee) => eventAttendee.email === attendee.email,
+              )
+              if (!eventAttendee) {
+                // found new attendee not yet in event
+                eventHasChanges = true
+              } else {
+                attendee.responseStatus = eventAttendee.responseStatus
+              }
+            }
+            for (const eventAttendee of event.attendees) {
+              const attendee = attendees.find(
+                (attendee) => attendee.email === eventAttendee.email,
+              )
+              if (!attendee) {
+                // found event attendee to be removed
+                eventHasChanges = true
+              }
+            }
+          }
+          if (eventHasChanges) {
+            event.attendees = attendees.slice()
+          }
+        } else {
+          if (event.attendees && event.attendees.length > 0) {
+            // no attendees - remove existing attendees
+            event.attendees = []
+            eventHasChanges = true
+          }
+        }
+        if (eventHasChanges) {
+          if (!options.test) {
+            const eventUpdateRequest = new Request(
+              `https://www.googleapis.com//calendar/v3/calendars/${answers.calendarId}/events/${event.id}?sendUpdates=all`,
+              {
+                headers: headers,
+                method: "PUT",
+                body: JSON.stringify(event),
+              },
             )
-          const updatedEvent = await eventUpdateResponse.json()
-          console.debug(
-            "🏒 syncGamesToCalendar - updated event response:",
-            updatedEvent,
-          )
+            const eventUpdateResponse = await fetch(eventUpdateRequest)
+            if (!eventUpdateResponse.ok)
+              throw new Error(
+                `HTTP error! status: ${eventUpdateResponse.status} ${eventUpdateResponse.statusText}`,
+              )
+            const updatedEvent = await eventUpdateResponse.json()
+            console.debug(
+              "🏒 syncGamesToCalendar - updated event response:",
+              updatedEvent,
+            )
+          } else {
+            console.debug(
+              "🏒 syncGamesToCalendar - event to update - test only:",
+              event,
+            )
+          }
         } else {
           console.debug(
-            "🏒 syncGamesToCalendar - event to update - test only:",
-            event,
+            "🏒 syncGamesToCalendar - event unchanged",
+            event.summary,
+            event.start.dateTime,
+            event.end.dateTime,
           )
         }
       } else {

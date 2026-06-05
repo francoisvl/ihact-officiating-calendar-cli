@@ -19,7 +19,7 @@ program
   .description(
     "Sync the 🏒 officiating schedule spreadsheet to a Google Calendar",
   )
-  .option('-t, --test', 'Sync in test mode only')
+  .option("-t, --test", "Sync in test mode only")
   .action((options) => {
     syncTask(options) // call the sync task function
   })
