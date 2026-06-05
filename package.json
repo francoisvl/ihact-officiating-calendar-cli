@@ -1,0 +1,20 @@
+{
+  "name": "ihact-officiating-calendar-cli",
+  "displayName": "🏒 IHACT Officiating Calendar Sync CLI",
+  "version": "1.0.0",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node --env-file=.env ./src/index.js sync",
+    "test": "node --env-file=.env ./src/index.js sync --test"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "commander": "^15.0.0",
+    "inquirer": "^14.0.2",
+    "xlsx": "^0.18.5"
+  }
+}
