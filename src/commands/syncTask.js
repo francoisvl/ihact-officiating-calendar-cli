@@ -147,22 +147,22 @@ Scorer 2: ${game.scorer2 || "[None]"}
         if (
           (game.ref1 &&
             game.ref1.trim().toLowerCase() ===
-              attendeeEmail.displayName.toLowerCase()) ||
+              attendeeEmail.rosteredName.toLowerCase()) ||
           (game.ref2 &&
             game.ref2.trim().toLowerCase() ===
-              attendeeEmail.displayName.toLowerCase()) ||
+              attendeeEmail.rosteredName.toLowerCase()) ||
           (game.liner1 &&
             game.liner1.trim().toLowerCase() ===
-              attendeeEmail.displayName.toLowerCase()) ||
+              attendeeEmail.rosteredName.toLowerCase()) ||
           (game.liner2 &&
             game.liner2.trim().toLowerCase() ===
-              attendeeEmail.displayName.toLowerCase()) ||
+              attendeeEmail.rosteredName.toLowerCase()) ||
           (game.scorer1 &&
             game.scorer1.trim().toLowerCase() ===
-              attendeeEmail.displayName.toLowerCase()) ||
+              attendeeEmail.rosteredName.toLowerCase()) ||
           (game.scorer2 &&
             game.scorer2.trim().toLowerCase() ===
-              attendeeEmail.displayName.toLowerCase())
+              attendeeEmail.rosteredName.toLowerCase())
         ) {
           attendees.push(attendeeEmail)
         }
