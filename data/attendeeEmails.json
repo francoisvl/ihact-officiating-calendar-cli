@@ -2,6 +2,25 @@
   {
     "email": "francois.vanlille@gmail.com",
     "displayName": "Francois van Lille",
+    "rosteredName": "Francois Van Lille",
+    "responseStatus": "needsAction"
+  },
+  {
+    "email": "rgregson2010@yahoo.com.au",
+    "displayName": "Francois (cc Rachel)",
+    "rosteredName": "Francois Van Lille",
+    "responseStatus": "needsAction"
+  },
+  {
+    "email": "e.knight1310@gmail.com",
+    "displayName": "Em Knight",
+    "rosteredName": "Em",
+    "responseStatus": "needsAction"
+  },
+  {
+    "email": "mdsirois@gmail.com",
+    "displayName": "Mark Sirois",
+    "rosteredName": "Mark Sirois",
     "responseStatus": "needsAction"
   }
 ]
